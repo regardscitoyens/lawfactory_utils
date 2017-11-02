@@ -38,6 +38,10 @@ def clean_url(url):
             path = 'affichTexte.do'
             query = 'cidTexte=' + url_jo_params['id'][0]
 
+        # ensure to link initial version of the text and not furtherly modified ones
+        if query.startswith('cidTexte'):
+            query += '&categorieLien=id'
+
         path = path.replace('./affichTexte.do', 'affichTexte.do')
 
     if 'senat.fr' in netloc:
