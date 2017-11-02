@@ -73,5 +73,8 @@ def clean_url(url):
     if 'assemblee-nationale.fr' in url:
         path = re_clean_ending_digits.sub(r"\1", path)
 
+    if 'xtor' in fragment:
+        fragment = ''
+
     return urlunparse((scheme, netloc, path, params, query, fragment))
 
