@@ -1,5 +1,8 @@
 import re
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
+from urllib.request import urlopen
+
+CACHE_URLS = {}
 
 def pre_clean_url(url):
     if url.startswith('www'):
@@ -7,6 +10,13 @@ def pre_clean_url(url):
     if url.startswith('/leg/http'):
         url = url[5:]
     return url
+
+def get_redirected_url(url):
+    if url in CACHE_URLS:
+        return CACHE_URLS[url]
+    redirected = urlopen(url).geturl()
+    CACHE_URLS[url] = redirected
+    return redirected
 
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
 def clean_url(url):
@@ -29,6 +39,10 @@ def clean_url(url):
     if 'legifrance.gouv.fr' in url:
         params = ''
         url_jo_params = parse_qs(query)
+
+        if 'WAspad' in path:
+            return clean_url(get_redirected_url(url))
+
         if 'cidTexte' in url_jo_params:
             query = 'cidTexte=' + url_jo_params['cidTexte'][0]
 
