@@ -1,6 +1,8 @@
 import re
+import time
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 from urllib.request import urlopen
+from http.client import BadStatusLine
 
 CACHE_URLS = {}
 
@@ -11,10 +13,16 @@ def pre_clean_url(url):
         url = url[5:]
     return url
 
-def get_redirected_url(url):
+def get_redirected_url(url, retry=5):
     if url in CACHE_URLS:
         return CACHE_URLS[url]
-    redirected = urlopen(url).geturl()
+    try:
+        redirected = urlopen(url).geturl()
+    except BadStatusLine as e:
+        if retry:
+            time.sleep(1)
+            return get_redirected_url(url, retry-1)
+        raise e
     CACHE_URLS[url] = redirected
     return redirected
 
