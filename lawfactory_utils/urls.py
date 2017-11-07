@@ -1,10 +1,12 @@
 import re
+import os
 import time
+import json
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 from urllib.request import urlopen
+from urllib.error import URLError
 from http.client import BadStatusLine
 
-CACHE_URLS = {}
 
 def pre_clean_url(url):
     if url.startswith('www'):
@@ -13,17 +15,25 @@ def pre_clean_url(url):
         url = url[5:]
     return url
 
+
 def get_redirected_url(url, retry=5):
-    if url in CACHE_URLS:
-        return CACHE_URLS[url]
+    """Returns redirected URL and cache the results in a local file"""
+    redirects_cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_redirects_cache.json')
+    redirects_cache = json.load(open(redirects_cache_file))
+
+    if url in redirects_cache:
+        return redirects_cache[url]
     try:
         redirected = urlopen(url).geturl()
-    except BadStatusLine as e:
+    except (BadStatusLine, URLError) as e:
         if retry:
             time.sleep(1)
             return get_redirected_url(url, retry-1)
         raise e
-    CACHE_URLS[url] = redirected
+
+    redirects_cache[url] = redirected
+    open(redirects_cache_file, 'w').write(json.dumps(redirects_cache, indent=2, sort_keys=True))
+
     return redirected
 
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
