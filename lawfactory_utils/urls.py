@@ -16,13 +16,14 @@ def pre_clean_url(url):
     return url
 
 
+REDIRECTS_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_redirects_cache.json')
+REDIRECTS_CACHE = json.load(open(REDIRECTS_CACHE_FILE))
+
 def get_redirected_url(url, retry=5):
     """Returns redirected URL and cache the results in a local file"""
-    redirects_cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_redirects_cache.json')
-    redirects_cache = json.load(open(redirects_cache_file))
 
-    if url in redirects_cache:
-        return redirects_cache[url]
+    if url in REDIRECTS_CACHE:
+        return REDIRECTS_CACHE[url]
     try:
         redirected = urlopen(url).geturl()
     except (BadStatusLine, URLError) as e:
@@ -31,10 +32,11 @@ def get_redirected_url(url, retry=5):
             return get_redirected_url(url, retry-1)
         raise e
 
-    redirects_cache[url] = redirected
-    open(redirects_cache_file, 'w').write(json.dumps(redirects_cache, indent=2, sort_keys=True))
+    REDIRECTS_CACHE[url] = redirected
+    open(REDIRECTS_CACHE_FILE, 'w').write(json.dumps(REDIRECTS_CACHE, indent=2, sort_keys=True))
 
     return redirected
+
 
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
 def clean_url(url):
