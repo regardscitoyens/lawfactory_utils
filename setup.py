@@ -26,6 +26,7 @@ setup(
     author='Regards Citoyens',
     author_email='contact@regardscitoyens.org',
 
+    package_data={'': ['_redirects_cache.json']},
     include_package_data=True,
 
     classifiers=[
