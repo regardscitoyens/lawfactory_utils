@@ -3,12 +3,19 @@ import os
 import time
 import json
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
-from urllib.request import urlopen
-from urllib.error import URLError
-from http.client import BadStatusLine
 
 from bs4 import BeautifulSoup
 import requests
+
+
+def download(url, retry=5):
+    try:
+        return requests.get(url)
+    except requests.exceptions.ConnectionError as e:
+        if retry:
+            time.sleep(1)
+            return download(url, retry-1)
+        raise e
 
 
 def pre_clean_url(url):
@@ -19,32 +26,14 @@ def pre_clean_url(url):
     return url
 
 
-REDIRECTS_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '_redirects_cache.json')
-REDIRECTS_CACHE = json.load(open(REDIRECTS_CACHE_FILE))
-
-def get_redirected_url(url, retry=5):
-    """Returns redirected URL and cache the results in a local file"""
-
-    if url in REDIRECTS_CACHE:
-        return REDIRECTS_CACHE[url]
-    try:
-        redirected = urlopen(url).geturl()
-    except (BadStatusLine, URLError) as e:
-        if retry:
-            time.sleep(1)
-            return get_redirected_url(url, retry-1)
-        raise e
-
-    REDIRECTS_CACHE[url] = redirected
-    open(REDIRECTS_CACHE_FILE, 'w').write(json.dumps(REDIRECTS_CACHE, indent=2, sort_keys=True))
-
-    return redirected
+def get_redirected_url(url):
+    """Returns redirected URL"""
+    return download(url).url
 
 
 def find_stable_link_for_CC_decision(url):
-    # TODO: use download() for retry
     # TODO: use requests-cache
-    resp = requests.get(url)
+    resp = download(url)
     soup = BeautifulSoup(resp.text, 'lxml')
     return urljoin(url, soup.select('#navpath a')[-1].attrs['href'])
 
