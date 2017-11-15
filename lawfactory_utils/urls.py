@@ -7,6 +7,9 @@ from urllib.request import urlopen
 from urllib.error import URLError
 from http.client import BadStatusLine
 
+from bs4 import BeautifulSoup
+import requests
+
 
 def pre_clean_url(url):
     if url.startswith('www'):
@@ -38,6 +41,14 @@ def get_redirected_url(url, retry=5):
     return redirected
 
 
+def find_stable_link_for_CC_decision(url):
+    # TODO: use download() for retry
+    # TODO: use requests-cache
+    resp = requests.get(url)
+    soup = BeautifulSoup(resp.text, 'lxml')
+    return urljoin(url, soup.select('#navpath a')[-1].attrs['href'])
+
+
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
 def clean_url(url):
     url = url.strip()
@@ -51,6 +62,7 @@ def clean_url(url):
     # fix url like http://www.senat.fr/dossier-legislatif/www.conseil-constitutionnel.fr/decision/2012/2012646dc.htm
     if 'www.conseil-' in url:
         url = 'http://www.conseil-' + url.split('www.conseil-')[1]
+        url = find_stable_link_for_CC_decision(url)
 
     scheme, netloc, path, params, query, fragment = urlparse(url)
 

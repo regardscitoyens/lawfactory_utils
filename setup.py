@@ -27,6 +27,7 @@ setup(
     author_email='contact@regardscitoyens.org',
 
     package_data={'': ['_redirects_cache.json']},
+    install_requires=['requests', 'lxml', 'beautifulsoup4'],
     include_package_data=True,
 
     classifiers=[
