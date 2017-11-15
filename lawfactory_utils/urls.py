@@ -5,7 +5,14 @@ import json
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
+
 import requests
+import requests_cache
+
+
+def enable_requests_cache():
+    cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
+    requests_cache.install_cache(cache_file)
 
 
 def download(url, retry=5):
@@ -32,7 +39,6 @@ def get_redirected_url(url):
 
 
 def find_stable_link_for_CC_decision(url):
-    # TODO: use requests-cache
     resp = download(url)
     soup = BeautifulSoup(resp.text, 'lxml')
     return urljoin(url, soup.select('#navpath a')[-1].attrs['href'])
