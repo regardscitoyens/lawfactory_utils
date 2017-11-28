@@ -2,6 +2,7 @@ import re
 import os
 import time
 import json
+import sys
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
@@ -41,7 +42,14 @@ def get_redirected_url(url):
 def find_stable_link_for_CC_decision(url):
     resp = download(url)
     soup = BeautifulSoup(resp.text, 'lxml')
-    return urljoin(url, soup.select('#navpath a')[-1].attrs['href'])
+
+    breadcrumb = soup.select('#navpath a')
+    if breadcrumb:
+        return urljoin(url, breadcrumb[-1].attrs['href'])
+    else:
+        # TODO: use log_error
+        print('[WARNING] INVALID CC URL - ', url, file=sys.stderr)
+        return url
 
 
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
