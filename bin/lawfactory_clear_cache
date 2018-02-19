@@ -2,8 +2,9 @@
 import os
 from lawfactory_utils.urls import cache_file
 
-if os.path.exists(cache_file()):
-    os.remove(cache_file())
-    print(cache_file(), 'removed')
+file = cache_file() + '.sqlite'
+if os.path.exists(file):
+    os.remove(file)
+    print(file, 'removed')
 else:
-    print(cache_file(), 'not found')
+    print(file, 'not found')
