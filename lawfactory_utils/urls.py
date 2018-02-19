@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 import requests
 import requests_cache
-
+from requests import ConnectionError, HTTPError
 
 def enable_requests_cache():
     cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
@@ -18,8 +18,11 @@ def enable_requests_cache():
 
 def download(url, retry=5):
     try:
-        return requests.get(url)
-    except requests.exceptions.ConnectionError as e:
+        resp = requests.get(url)
+        # if 500 <= resp.status_code < 600:
+        #    raise HTTPError('%s Server Error for url: %s' % (resp.status_code , url), response=resp)
+        return resp
+    except (ConnectionError, HTTPError) as e:
         if retry:
             time.sleep(1)
             return download(url, retry-1)
@@ -98,7 +101,7 @@ def clean_url(url):
         path = path.replace('dossierleg/', 'dossier-legislatif/')
 
         # normalize dosleg url by removing extra url parameters
-        if 'dossier-legislatif/':
+        if 'dossier-legislatif/' in path:
             query = ''
             fragment = ''
 
