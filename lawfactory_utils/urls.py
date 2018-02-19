@@ -97,6 +97,11 @@ def clean_url(url):
         path = path.replace('leg/../', '/')
         path = path.replace('dossierleg/', 'dossier-legislatif/')
 
+        # normalize dosleg url by removing extra url parameters
+        if 'dossier-legislatif/':
+            query = ''
+            fragment = ''
+
     if netloc == 'webdim':
         netloc = 'www.assemblee-nationale.fr'
 
