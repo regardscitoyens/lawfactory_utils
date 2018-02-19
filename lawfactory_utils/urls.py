@@ -1,7 +1,6 @@
 import re
 import os
 import time
-import json
 import sys
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 
@@ -11,16 +10,20 @@ import requests
 import requests_cache
 from requests import ConnectionError, HTTPError
 
+
+def cache_file():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
+
+
 def enable_requests_cache():
-    cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
-    requests_cache.install_cache(cache_file)
+    requests_cache.install_cache(cache_file())
 
 
 def download(url, retry=5):
     try:
         resp = requests.get(url)
         # if 500 <= resp.status_code < 600:
-        #    raise HTTPError('%s Server Error for url: %s' % (resp.status_code , url), response=resp)
+        #    raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
         return resp
     except (ConnectionError, HTTPError) as e:
         if retry:
@@ -59,7 +62,7 @@ re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
 def clean_url(url):
     url = url.strip()
 
-    # fix urls like 'pjl09-518.htmlhttp://www.assemblee-nationale.fr/13/ta/ta0518.asp'
+    # fix urls like 'pjl09-518.htmlhttp://www.assemblee-nationale.fr/13/ta/ta051`8.asp'
     if url.find('https://') > 0:
         url = 'https://' + url.split('https://')[1]
     if url.find('http://') > 0:
@@ -120,4 +123,3 @@ def clean_url(url):
         fragment = ''
 
     return urlunparse((scheme, netloc, path, params, query, fragment))
-

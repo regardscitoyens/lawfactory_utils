@@ -38,5 +38,5 @@ setup(
     keywords='scraping politics data',
 
     packages=['lawfactory_utils'],
-
+    scripts=['bin/lawfactory_clear_cache'],
 )
