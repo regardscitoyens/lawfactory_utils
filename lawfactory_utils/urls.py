@@ -2,33 +2,69 @@ import re
 import os
 import time
 import sys
+import json
+import hashlib
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
 
 import requests
-import requests_cache
 from requests import ConnectionError, HTTPError
 
 
-def cache_file():
+def cache_directory():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
 
 
+CACHE_ENABLED = False
 def enable_requests_cache():
-    requests_cache.install_cache(cache_file())
+    global CACHE_ENABLED
+    CACHE_ENABLED = True
+
+
+class FakeRequestsResponse:
+    def __init__(self, text, status_code, url):
+        self.text = text
+        self.status_code = status_code
+        self._encoding = 'utf-8'
+        self.url = url
+
+    def json(self):
+        return json.loads(self.text)
+
+    def __setattr__(self, attr, value):
+        if attr == 'encoding':
+            self.text = self.text.encode(self._encoding).decode(value)
+            self._encoding = value
+            return
+        return super().__setattr__(attr, value)
 
 
 def download(url, retry=5):
     try:
+        if CACHE_ENABLED:
+            file = os.path.join(cache_directory(), hashlib.sha224(url.encode('utf-8')).hexdigest())
+            if os.path.exists(file):
+                resp = json.load(open(file))
+                return FakeRequestsResponse(**resp)
+
         resp = requests.get(url)
-        # if 500 <= resp.status_code < 600:
-        #    raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
+        if 500 <= resp.status_code < 600:
+            raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
+
+        if CACHE_ENABLED:
+            if not os.path.exists(cache_directory()):
+                os.makedirs(cache_directory())
+            json.dump({
+                'status_code': resp.status_code,
+                'text': resp.text,
+                'url': resp.url,
+            }, open(file, 'w'))
         return resp
     except (ConnectionError, HTTPError) as e:
         if retry:
             time.sleep(1)
-            return download(url, retry-1)
+            return download(url, retry=retry-1)
         raise e
 
 

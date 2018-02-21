@@ -26,7 +26,7 @@ setup(
     author='Regards Citoyens',
     author_email='contact@regardscitoyens.org',
 
-    install_requires=['requests', 'lxml', 'beautifulsoup4', 'requests_cache'],
+    install_requires=['requests', 'lxml', 'beautifulsoup4'],
 
     classifiers=[
         'Development Status :: 1 - Planning',
@@ -38,5 +38,5 @@ setup(
     keywords='scraping politics data',
 
     packages=['lawfactory_utils'],
-    scripts=['bin/lawfactory_clear_cache'],
+    scripts=['bin/lawfactory_where_is_my_cache'],
 )
