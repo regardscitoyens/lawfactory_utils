@@ -82,6 +82,8 @@ def get_redirected_url(url):
 
 
 def find_stable_link_for_CC_decision(url):
+    if url == 'http://www.conseil-constitutionnel.fr/decision.50309.html'
+        return 'http://www.conseil-constitutionnel.fr/conseil-constitutionnel/francais/les-decisions/acces-par-date/decisions-depuis-1959/2010/2010-615-dc/decision-n-2010-615-dc-du-9-novembre-2010.50419.html'
     resp = download(url)
     soup = BeautifulSoup(resp.text, 'lxml')
 
