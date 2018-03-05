@@ -23,7 +23,7 @@ def enable_requests_cache():
 
 
 class FakeRequestsResponse:
-    def __init__(self, text, status_code, url, encoding):
+    def __init__(self, text, status_code, url, encoding='utf-8'):
         self.text = text
         self.status_code = status_code
         self._encoding = encoding
