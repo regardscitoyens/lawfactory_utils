@@ -23,10 +23,10 @@ def enable_requests_cache():
 
 
 class FakeRequestsResponse:
-    def __init__(self, text, status_code, url):
+    def __init__(self, text, status_code, url, encoding):
         self.text = text
         self.status_code = status_code
-        self._encoding = 'utf-8'
+        self._encoding = encoding
         self.url = url
 
     def json(self):
@@ -34,6 +34,8 @@ class FakeRequestsResponse:
 
     def __setattr__(self, attr, value):
         if attr == 'encoding':
+            if self._encoding == value:
+                return
             self.text = self.text.encode(self._encoding).decode(value)
             self._encoding = value
             return
@@ -59,6 +61,7 @@ def download(url, retry=5):
                 'status_code': resp.status_code,
                 'text': resp.text,
                 'url': resp.url,
+                'encoding': resp.encoding,
             }, open(file, 'w'))
         return resp
     except (ConnectionError, HTTPError) as e:
