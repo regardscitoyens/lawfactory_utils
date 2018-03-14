@@ -123,7 +123,9 @@ def clean_url(url):
         url_jo_params = parse_qs(query)
 
         if 'WAspad' in path:
-            return clean_url(get_redirected_url(url))
+            redirected_url = get_redirected_url(url)
+            if url != redirected_url:
+                return clean_url(redirected_url)
 
         if 'cidTexte' in url_jo_params:
             query = 'cidTexte=' + url_jo_params['cidTexte'][0]
