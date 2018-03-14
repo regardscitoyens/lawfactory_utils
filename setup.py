@@ -26,7 +26,7 @@ setup(
     author='Regards Citoyens',
     author_email='contact@regardscitoyens.org',
 
-    install_requires=['requests', 'lxml', 'beautifulsoup4'],
+    install_requires=['requests', 'lxml==4.1.1', 'beautifulsoup4'],
 
     classifiers=[
         'Development Status :: 1 - Planning',
