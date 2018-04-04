@@ -16,6 +16,7 @@ def cache_directory():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
 
 
+CACHE_VERSION = 1
 CACHE_ENABLED = False
 def enable_requests_cache():
     global CACHE_ENABLED
@@ -23,10 +24,10 @@ def enable_requests_cache():
 
 
 class FakeRequestsResponse:
-    def __init__(self, text, status_code, url, encoding=None):
+    def __init__(self, text, status_code, url, encoding=None, **kwargs):
         self.text = text
         self.status_code = status_code
-        self._encoding = encoding or 'utf-8'
+        self._encoding = encoding
         self.url = url
 
     def json(self):
@@ -48,9 +49,18 @@ def download(url, retry=5):
             file = os.path.join(cache_directory(), hashlib.sha224(url.encode('utf-8')).hexdigest())
             if os.path.exists(file):
                 resp = json.load(open(file))
-                return FakeRequestsResponse(**resp)
+                if resp.get('version', 0) == CACHE_VERSION:
+                    if '--debug' in sys.argv:
+                        print('[download]', url, '[#cached]', file=sys.stderr)
+                    return FakeRequestsResponse(**resp)
 
-        resp = requests.get(url)
+        if '--debug' in sys.argv:
+            print('[download]', url, file=sys.stderr)
+
+        resp = requests.get(url, headers={
+            'User-Agent': 'https://github.com/regardscitoyens/the-law-factory-parser (Compat: Mozilla)'
+        })
+
         if 500 <= resp.status_code < 600:
             raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
 
@@ -62,6 +72,7 @@ def download(url, retry=5):
                 'text': resp.text,
                 'url': resp.url,
                 'encoding': resp.encoding,
+                'cache_version': CACHE_VERSION,
             }, open(file, 'w'))
         return resp
     except (ConnectionError, HTTPError) as e:
@@ -99,6 +110,17 @@ def find_stable_link_for_CC_decision(url):
         return url
 
 
+def find_jo_link(url):
+    resp = download(url)
+    m = re.search(r'(https://www\.legifrance\.gouv\.fr/affichTexte.do\?cidTexte=[\w\d]+)&amp;dateTexte=\d+', resp.text)
+    if m:
+        return m.group(0) + '&categorieLien=id'
+    else:
+        # TODO: use log_error
+        print('[WARNING] INVALID JO URL - ', url, file=sys.stderr)
+        return url
+
+
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
 def clean_url(url):
     url = url.strip()
@@ -123,12 +145,16 @@ def clean_url(url):
         url_jo_params = parse_qs(query)
 
         if 'WAspad' in path:
-            redirected_url = get_redirected_url(url)
-            if url != redirected_url:
-                return clean_url(redirected_url)
+            newurl = get_redirected_url(url)
+            if url != newurl:
+                return clean_url(newurl)
 
         if 'cidTexte' in url_jo_params:
             query = 'cidTexte=' + url_jo_params['cidTexte'][0]
+        elif path.endswith('/jo/texte'):
+            newurl = find_jo_link(url)
+            if url != newurl:
+                return clean_url(newurl)
 
         if netloc == 'legifrance.gouv.fr':
             netloc = 'www.legifrance.gouv.fr'
