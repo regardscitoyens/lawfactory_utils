@@ -27,7 +27,7 @@ class FakeRequestsResponse:
     def __init__(self, text, status_code, url, encoding=None, **kwargs):
         self.text = text
         self.status_code = status_code
-        self._encoding = encoding
+        self._encoding = encoding or 'utf-8'
         self.url = url
 
     def json(self):
