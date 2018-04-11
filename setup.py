@@ -11,7 +11,7 @@ with open(path.join(here, 'lawfactory_utils', '__version.py')) as __version:
     exec(__version.read())
 assert __version__ is not None
 
-with open(path.join(here, 'README.md')) as readme:
+with open(path.join(here, 'README.rst')) as readme:
     LONG_DESC = readme.read()
 
 setup(
