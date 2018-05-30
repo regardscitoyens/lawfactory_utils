@@ -16,7 +16,7 @@ def cache_directory():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
 
 
-CACHE_VERSION = 2
+CACHE_VERSION = 1
 CACHE_ENABLED = False
 def enable_requests_cache():
     global CACHE_ENABLED
@@ -24,18 +24,23 @@ def enable_requests_cache():
 
 
 class FakeRequestsResponse:
-    def __init__(self, content, status_code, url, encoding=None, **kwargs):
-        self.content = content
+    def __init__(self, text, status_code, url, encoding=None, **kwargs):
+        self.text = text
         self.status_code = status_code
-        self.encoding = encoding or 'utf-8'
+        self._encoding = encoding or 'utf-8'
         self.url = url
 
     def json(self):
         return json.loads(self.text)
 
-    @property
-    def text(self):
-        return self.content.decode(self.encoding)
+    def __setattr__(self, attr, value):
+        if attr == 'encoding':
+            if self._encoding == value:
+                return
+            self.text = self.text.encode(self._encoding).decode(value)
+            self._encoding = value
+            return
+        return super().__setattr__(attr, value)
 
 
 def download(url, retry=5):
@@ -70,7 +75,7 @@ def download(url, retry=5):
                 os.makedirs(cache_directory())
             json.dump({
                 'status_code': resp.status_code,
-                'content': resp.content,
+                'text': resp.text,
                 'url': resp.url,
                 'encoding': resp.encoding,
                 'cache_version': CACHE_VERSION,
