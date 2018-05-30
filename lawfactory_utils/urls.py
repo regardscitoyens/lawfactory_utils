@@ -44,11 +44,12 @@ def download(url, retry=5):
             file = os.path.join(cache_directory(), hashlib.sha224(url.encode('utf-8')).hexdigest())
             if os.path.exists(file):
                 try:
-                    resp = json.load(open(file))
-                    if resp.get('cache_version', 0) == CACHE_VERSION:
-                        if '--debug' in sys.argv:
-                            print('[download]', url, '[#cached]', file=sys.stderr)
-                        return FakeRequestsResponse(**resp)
+                    with open(file) as f:
+                        resp = json.load(f)
+                        if resp.get('cache_version', 0) == CACHE_VERSION:
+                            if '--debug' in sys.argv:
+                                print('[download]', url, '[#cached]', file=sys.stderr)
+                            return FakeRequestsResponse(**resp)
                 except json.decoder.JSONDecodeError:
                     if '--debug' in sys.argv:
                         print('[download]', url, '[#failed-to-retrieve]', file=sys.stderr)
