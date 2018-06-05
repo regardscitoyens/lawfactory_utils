@@ -20,7 +20,7 @@ setup(
 
     description='Python utils for The Law Factory parsers',
     long_description=LONG_DESC,
-    license="GPLv3+",
+    license="MIT",
 
     url='https://github.com/regardscitoyens/lawfactory_utils',
     author='Regards Citoyens',
@@ -30,7 +30,7 @@ setup(
 
     classifiers=[
         'Development Status :: 1 - Planning',
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
     ],
