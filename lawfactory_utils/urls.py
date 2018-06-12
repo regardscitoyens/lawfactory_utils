@@ -2,7 +2,7 @@ import re
 import os
 import time
 import sys
-import json
+import pickle
 import hashlib
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 
@@ -16,31 +16,10 @@ def cache_directory():
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'requests_cache')
 
 
-CACHE_VERSION = 1
 CACHE_ENABLED = False
 def enable_requests_cache():
     global CACHE_ENABLED
     CACHE_ENABLED = True
-
-
-class FakeRequestsResponse:
-    def __init__(self, text, status_code, url, encoding=None, **kwargs):
-        self.text = text
-        self.status_code = status_code
-        self._encoding = encoding or 'utf-8'
-        self.url = url
-
-    def json(self):
-        return json.loads(self.text)
-
-    def __setattr__(self, attr, value):
-        if attr == 'encoding':
-            if self._encoding == value:
-                return
-            self.text = self.text.encode(self._encoding).decode(value)
-            self._encoding = value
-            return
-        return super().__setattr__(attr, value)
 
 
 def download(url, retry=5):
@@ -49,16 +28,14 @@ def download(url, retry=5):
             file = os.path.join(cache_directory(), hashlib.sha224(url.encode('utf-8')).hexdigest())
             if os.path.exists(file):
                 try:
-                    with open(file) as f:
-                        resp = json.load(f)
-                        if resp.get('cache_version', 0) == CACHE_VERSION:
-                            if '--debug' in sys.argv:
-                                print('[download]', url, '[#cached]', file=sys.stderr)
-                            return FakeRequestsResponse(**resp)
-                except json.decoder.JSONDecodeError:
+                    with open(file, 'rb') as f:
+                        resp = pickle.load(f)
+                        if '--debug' in sys.argv:
+                            print('[download]', url, '[#cached]', file=sys.stderr)
+                        return resp
+                except Exception:
                     if '--debug' in sys.argv:
                         print('[download]', url, '[#failed-to-retrieve]', file=sys.stderr)
-
 
         if '--debug' in sys.argv:
             print('[download]', url, file=sys.stderr)
@@ -73,13 +50,8 @@ def download(url, retry=5):
         if CACHE_ENABLED:
             if not os.path.exists(cache_directory()):
                 os.makedirs(cache_directory())
-            json.dump({
-                'status_code': resp.status_code,
-                'text': resp.text,
-                'url': resp.url,
-                'encoding': resp.encoding,
-                'cache_version': CACHE_VERSION,
-            }, open(file, 'w'))
+            with open(file, 'wb') as f:
+                pickle.dump(resp, f)
         return resp
     except (ConnectionError, HTTPError) as e:
         if retry:
