@@ -4,6 +4,7 @@ import time
 import sys
 import pickle
 import hashlib
+import shutil
 from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
@@ -22,12 +23,17 @@ def enable_requests_cache():
     CACHE_ENABLED = True
 
 
+def clean_cache():
+    shutil.rmtree(cache_directory(), ignore_errors=True)
+
+
 def download(url, retry=5):
     """
     Proxy function to be used with `enable_requests_cache()`
     to have the requests cached
 
     >>> import timeit
+    >>> clean_cache()
     >>> enable_requests_cache()
     >>> url = "https://regardscitoyens.org/"
     >>> timeit.timeit(lambda: download(url), number=1) < 0.01
@@ -187,12 +193,18 @@ def clean_url(url):
 def parse_national_assembly_url(url_an):
     """Returns the slug and the legislature of an AN url
 
+    >>> # old format
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/devoir_vigilance_entreprises_donneuses_ordre.asp")
     (14, 'devoir_vigilance_entreprises_donneuses_ordre')
+    >>> # new format
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique")
     (15, 'retablissement_confiance_action_publique')
+    >>> # sometimes there's a linked subsection that we ignore
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/le_dossier.asp#deuxieme_partie")
+    (14, 'le_dossier')
+
     """
-    slug = url_an.split('/')[-1].replace('.asp', '')
+    slug = url_an.split('/')[-1].split('.asp')[0]
     legislature_match = re.search(r"\.fr/(dyn/)?(\d+)/", url_an)
     if legislature_match:
         return int(legislature_match.group(2)), slug
