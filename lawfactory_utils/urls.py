@@ -23,6 +23,18 @@ def enable_requests_cache():
 
 
 def download(url, retry=5):
+    """
+    Proxy function to be used with `enable_requests_cache()`
+    to have the requests cached
+
+    >>> import timeit
+    >>> enable_requests_cache()
+    >>> url = "https://regardscitoyens.org/"
+    >>> timeit.timeit(lambda: download(url), number=1) < 0.01
+    False
+    >>> timeit.timeit(lambda: download(url), number=1) < 0.01
+    True
+    """
     try:
         if CACHE_ENABLED:
             file = os.path.join(cache_directory(), hashlib.sha224(url.encode('utf-8')).hexdigest())
@@ -170,3 +182,21 @@ def clean_url(url):
         fragment = ''
 
     return urlunparse((scheme, netloc, path, params, query, fragment))
+
+
+def parse_national_assembly_url(url_an):
+    """Returns the slug and the legislature of an AN url
+
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique")
+    (15, 'retablissement_confiance_action_publique')
+    """
+    slug = url_an.split('/')[-1].replace('.asp', '')
+    legislature_match = re.search(r"\.fr/(dyn/)?(\d+)/", url_an)
+    if legislature_match:
+        return int(legislature_match.group(2)), slug
+    return None, slug
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
