@@ -187,6 +187,8 @@ def clean_url(url):
 def parse_national_assembly_url(url_an):
     """Returns the slug and the legislature of an AN url
 
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/devoir_vigilance_entreprises_donneuses_ordre.asp")
+    (14, 'devoir_vigilance_entreprises_donneuses_ordre')
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique")
     (15, 'retablissement_confiance_action_publique')
     """
