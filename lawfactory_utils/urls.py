@@ -117,8 +117,18 @@ def find_jo_link(url):
         return url
 
 
+AN_NEW_URL_TEMPLATE = "http://www.assemblee-nationale.fr/dyn/{legislature}/dossiers/{slug}"
+AN_OLD_URL_TEMPLATE = "http://www.assemblee-nationale.fr/{legislature}/dossiers/{slug}.asp"
+
+
 re_clean_ending_digits = re.compile(r"(\d+\.asp)[\dl]+$")
 def clean_url(url):
+    """
+    Normalize the url and clean it
+
+    >>> clean_url("http://www.assemblee-nationale.fr/15/dossiers/le_nouveau_dossier.asp#deuxieme_partie")
+    'http://www.assemblee-nationale.fr/dyn/15/dossiers/deuxieme_partie'
+    """
     url = url.strip()
 
     # fix urls like 'pjl09-518.htmlhttp://www.assemblee-nationale.fr/13/ta/ta051`8.asp'
@@ -183,6 +193,14 @@ def clean_url(url):
     # url like http://www.assemblee-nationale.fr/13/projets/pl2727.asp2727
     if 'assemblee-nationale.fr' in url:
         path = re_clean_ending_digits.sub(r"\1", path)
+        if '/dossiers/' in path:
+            url = urlunparse((scheme, netloc, path, params, query, fragment))
+            legislature, slug = parse_national_assembly_url(url)
+            if legislature and slug:
+                template = AN_OLD_URL_TEMPLATE
+                if legislature > 14:
+                    template = AN_NEW_URL_TEMPLATE
+                return template.format(legislature=legislature, slug=slug)
 
     if 'xtor' in fragment:
         fragment = ''
@@ -207,14 +225,16 @@ def parse_national_assembly_url(url_an):
 
     """
     legislature_match = re.search(r"\.fr/(dyn/)?(\d+)/", url_an)
-    legislature = None
     if legislature_match:
         legislature = int(legislature_match.group(2))
+    else:
+        legislature = None
 
     slug_match = re.search(r"/([\w_]*)(?:\.asp)?(?:#([\w_]*))?$", url_an)
-    slug = slug_match.group(1)
     if legislature and legislature == 15:
         slug = slug_match.group(2) or slug_match.group(1)
+    else:
+        slug = slug_match.group(1)
 
     return legislature, slug
 
