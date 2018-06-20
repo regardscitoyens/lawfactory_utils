@@ -230,7 +230,7 @@ def parse_national_assembly_url(url_an):
     else:
         legislature = None
 
-    slug_match = re.search(r"/([\w_]*)(?:\.asp)?(?:#([\w_]*))?$", url_an)
+    slug_match = re.search(r"/([\w_\-]*)(?:\.asp)?(?:#([\w_\-]*))?$", url_an)
     if legislature and legislature == 15:
         slug = slug_match.group(2) or slug_match.group(1)
     else:
