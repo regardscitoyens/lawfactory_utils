@@ -199,16 +199,24 @@ def parse_national_assembly_url(url_an):
     >>> # new format
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique")
     (15, 'retablissement_confiance_action_publique')
-    >>> # sometimes there's a linked subsection that we ignore
+    >>> # sometimes there's a linked subsection, it's the real dosleg ID, we only use it if we are in the 15th legislature
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/le_dossier.asp#deuxieme_partie")
     (14, 'le_dossier')
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/15/dossiers/le_nouveau_dossier.asp#deuxieme_partie")
+    (15, 'deuxieme_partie')
 
     """
-    slug = url_an.split('/')[-1].split('.asp')[0]
     legislature_match = re.search(r"\.fr/(dyn/)?(\d+)/", url_an)
+    legislature = None
     if legislature_match:
-        return int(legislature_match.group(2)), slug
-    return None, slug
+        legislature = int(legislature_match.group(2))
+
+    slug_match = re.search(r"/([\w_]*)(?:\.asp)?(?:#([\w_]*))?$", url_an)
+    slug = slug_match.group(1)
+    if legislature and legislature == 15:
+        slug = slug_match.group(2) or slug_match.group(1)
+
+    return legislature, slug
 
 
 if __name__ == "__main__":
