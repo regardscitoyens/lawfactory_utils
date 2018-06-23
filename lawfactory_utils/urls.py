@@ -222,6 +222,9 @@ def parse_national_assembly_url(url_an):
     (14, 'le_dossier')
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/15/dossiers/le_nouveau_dossier.asp#deuxieme_partie")
     (15, 'deuxieme_partie')
+    >>> # some dossier-like urls are not actual dossiers
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/motion_referendaire_2097.pdf")
+    (14, None)
 
     """
     legislature_match = re.search(r"\.fr/(dyn/)?(\d+)/", url_an)
@@ -230,10 +233,11 @@ def parse_national_assembly_url(url_an):
     else:
         legislature = None
 
+    slug = None
     slug_match = re.search(r"/([\w_\-]*)(?:\.asp)?(?:#([\w_\-]*))?$", url_an)
     if legislature and legislature == 15:
         slug = slug_match.group(2) or slug_match.group(1)
-    else:
+    elif slug_match:
         slug = slug_match.group(1)
 
     return legislature, slug
