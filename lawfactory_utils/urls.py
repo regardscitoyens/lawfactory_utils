@@ -198,7 +198,7 @@ def clean_url(url):
             legislature, slug = parse_national_assembly_url(url)
             if legislature and slug:
                 template = AN_OLD_URL_TEMPLATE
-                if legislature >= 14:
+                if legislature > 14:
                     template = AN_NEW_URL_TEMPLATE
                 return template.format(legislature=legislature, slug=slug)
 
@@ -213,18 +213,18 @@ def parse_national_assembly_url(url_an):
 
     >>> # old format
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/13/dossiers/devoir_vigilance_entreprises_donneuses_ordre.asp")
-    (13, 'devoir_vigilance_entreprises_donneuses_ordre')
+    (14, 'devoir_vigilance_entreprises_donneuses_ordre')
     >>> # new format
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique")
     (15, 'retablissement_confiance_action_publique')
     >>> # sometimes there's a linked subsection, it's the real dosleg ID, we only use it if we are in the 15th legislature
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/13/dossiers/le_dossier.asp#deuxieme_partie")
-    (13, 'le_dossier')
+    (14, 'le_dossier')
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/15/dossiers/le_nouveau_dossier.asp#deuxieme_partie")
     (15, 'deuxieme_partie')
     >>> # some dossier-like urls are not actual dossiers
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/13/dossiers/motion_referendaire_2097.pdf")
-    (13, None)
+    (14, None)
 
     """
     legislature_match = re.search(r"\.fr/(dyn/)?(\d+)/", url_an)
@@ -236,7 +236,7 @@ def parse_national_assembly_url(url_an):
     slug = None
     slug_match = re.search(r"/([\w_\-]*)(?:\.asp)?(?:#([\w_\-]*))?$", url_an)
     if slug_match:
-        if legislature and legislature in (14, 15):
+        if legislature and legislature > 14:
             slug = slug_match.group(2) or slug_match.group(1)
         else:
             slug = slug_match.group(1)
