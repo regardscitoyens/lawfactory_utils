@@ -198,7 +198,7 @@ def clean_url(url):
             legislature, slug = parse_national_assembly_url(url)
             if legislature and slug:
                 template = AN_OLD_URL_TEMPLATE
-                if legislature > 14:
+                if legislature >= 14:
                     template = AN_NEW_URL_TEMPLATE
                 return template.format(legislature=legislature, slug=slug)
 
@@ -235,7 +235,7 @@ def parse_national_assembly_url(url_an):
 
     slug = None
     slug_match = re.search(r"/([\w_\-]*)(?:\.asp)?(?:#([\w_\-]*))?$", url_an)
-    if legislature and legislature == 15:
+    if legislature and legislature in (14, 15):
         slug = slug_match.group(2) or slug_match.group(1)
     elif slug_match:
         slug = slug_match.group(1)
