@@ -212,18 +212,18 @@ def parse_national_assembly_url(url_an):
     """Returns the slug and the legislature of an AN url
 
     >>> # old format
-    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/13/dossiers/devoir_vigilance_entreprises_donneuses_ordre.asp")
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/devoir_vigilance_entreprises_donneuses_ordre.asp")
     (14, 'devoir_vigilance_entreprises_donneuses_ordre')
     >>> # new format
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/dyn/15/dossiers/retablissement_confiance_action_publique")
     (15, 'retablissement_confiance_action_publique')
     >>> # sometimes there's a linked subsection, it's the real dosleg ID, we only use it if we are in the 15th legislature
-    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/13/dossiers/le_dossier.asp#deuxieme_partie")
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/le_dossier.asp#deuxieme_partie")
     (14, 'le_dossier')
     >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/15/dossiers/le_nouveau_dossier.asp#deuxieme_partie")
     (15, 'deuxieme_partie')
     >>> # some dossier-like urls are not actual dossiers
-    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/13/dossiers/motion_referendaire_2097.pdf")
+    >>> parse_national_assembly_url("http://www.assemblee-nationale.fr/14/dossiers/motion_referendaire_2097.pdf")
     (14, None)
 
     """
