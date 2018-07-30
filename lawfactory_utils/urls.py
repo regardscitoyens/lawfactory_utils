@@ -5,9 +5,7 @@ import sys
 import pickle
 import hashlib
 import shutil
-from urllib.parse import urljoin, parse_qs, urlparse, urlunparse
-
-from bs4 import BeautifulSoup
+from urllib.parse import parse_qs, urlparse, urlunparse
 
 import requests
 from requests import ConnectionError, HTTPError
@@ -95,15 +93,12 @@ def find_stable_link_for_CC_decision(url):
     if url == 'http://www.conseil-constitutionnel.fr/decision.50309.html':
         return 'http://www.conseil-constitutionnel.fr/conseil-constitutionnel/francais/les-decisions/acces-par-date/decisions-depuis-1959/2010/2010-615-dc/decision-n-2010-615-dc-du-9-novembre-2010.50419.html'
     resp = download(url)
-    soup = BeautifulSoup(resp.text, 'lxml')
 
-    breadcrumb = soup.select('#navpath a')
-    if breadcrumb:
-        return urljoin(url, breadcrumb[-1].attrs['href'])
-    else:
+    if resp.status_code is not 200:
         # TODO: use log_error
         print('[WARNING] INVALID CC URL - ', url, file=sys.stderr)
-        return url
+
+    return resp.url # redirected url
 
 
 def find_jo_link(url):
@@ -128,6 +123,8 @@ def clean_url(url):
 
     >>> clean_url("http://www.assemblee-nationale.fr/15/dossiers/le_nouveau_dossier.asp#deuxieme_partie")
     'http://www.assemblee-nationale.fr/dyn/15/dossiers/deuxieme_partie'
+    >>> clean_url("http://www.conseil-constitutionnel.fr/conseil-constitutionnel/francais/les-decisions/acces-par-date/decisions-depuis-1959/2013/2013-681-dc/decision-n-2013-681-dc-du-5-decembre-2013.138900.html")
+    'https://www.conseil-constitutionnel.fr/decision/2013/2013681DC.htm'
     """
     url = url.strip()
 
