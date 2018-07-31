@@ -91,10 +91,18 @@ def get_redirected_url(url):
 
 def find_stable_link_for_CC_decision(url):
     if url == 'http://www.conseil-constitutionnel.fr/decision.50309.html':
-        return 'http://www.conseil-constitutionnel.fr/conseil-constitutionnel/francais/les-decisions/acces-par-date/decisions-depuis-1959/2010/2010-615-dc/decision-n-2010-615-dc-du-9-novembre-2010.50419.html'
+        url = 'http://www.conseil-constitutionnel.fr/conseil-constitutionnel/francais/les-decisions/acces-par-date/decisions-depuis-1959/2010/2010-615-dc/decision-n-2010-615-dc-du-9-novembre-2010.50419.html'
     resp = download(url)
 
     if resp.status_code is not 200:
+        # try to fix "acces-par-date" urls
+        if 'acces-par-date' in url:
+            year, num = url.split('decision-n-')[1].split('-dc-')[0].split('-')
+            stable_format = "https://www.conseil-constitutionnel.fr/decision/{year}/{year}{num}DC.htm"
+            new_url = stable_format.format(year=year, num=num)
+            new_resp = download(new_url)
+            if new_resp.status_code is 200:
+                return new_resp.url
         # TODO: use log_error
         print('[WARNING] INVALID CC URL - ', url, file=sys.stderr)
 
