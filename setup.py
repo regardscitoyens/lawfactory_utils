@@ -14,6 +14,9 @@ assert __version__ is not None
 with open(path.join(here, 'README.rst')) as readme:
     LONG_DESC = readme.read()
 
+with open(path.join(here, 'requirements.txt')) as f:
+    requirements = f.read().splitlines()
+
 setup(
     name='lawfactory_utils',
     version=__version__,
@@ -26,8 +29,6 @@ setup(
     author='Regards Citoyens',
     author_email='contact@regardscitoyens.org',
 
-    install_requires=['requests', 'lxml==4.1.1', 'beautifulsoup4'],
-
     classifiers=[
         'Development Status :: 1 - Planning',
         'License :: OSI Approved :: MIT License',
@@ -38,5 +39,8 @@ setup(
     keywords='scraping politics data',
 
     packages=['lawfactory_utils'],
+
+    install_requires=requirements,
+
     scripts=['bin/lawfactory_where_is_my_cache'],
 )
