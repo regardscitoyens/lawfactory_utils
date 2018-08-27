@@ -104,7 +104,7 @@ def find_stable_link_for_CC_decision(url):
             if new_resp.status_code is 200:
                 return new_resp.url
         # TODO: use log_error
-        print('[WARNING] INVALID CC URL - ', url, file=sys.stderr)
+        print('[WARNING] INVALID CC URL - ', url, resp.status_code, file=sys.stderr)
 
     return resp.url # redirected url
 
@@ -142,14 +142,18 @@ def clean_url(url):
     if url.find('http://') > 0:
         url = 'http://' + url.split('http://')[1]
 
-    # fix url like http://www.senat.fr/dossier-legislatif/www.conseil-constitutionnel.fr/decision/2012/2012646dc.htm
-    if 'www.conseil-' in url:
-        url = 'http://www.conseil-' + url.split('www.conseil-')[1]
-        url = find_stable_link_for_CC_decision(url)
-
     scheme, netloc, path, params, query, fragment = urlparse(url)
 
     path = path.replace('//', '/')
+
+    if 'xtor' in fragment:
+        fragment = ''
+
+    # fix url like http://www.senat.fr/dossier-legislatif/www.conseil-constitutionnel.fr/decision/2012/2012646dc.htm
+    if 'www.conseil-' in url:
+        url = urlunparse((scheme, netloc, path, params, query, fragment))
+        url = 'http://www.conseil-' + url.split('www.conseil-')[1]
+        return find_stable_link_for_CC_decision(url)
 
     if 'legifrance.gouv.fr' in url:
         params = ''
@@ -206,9 +210,6 @@ def clean_url(url):
                 if legislature > 14:
                     template = AN_NEW_URL_TEMPLATE
                 return template.format(legislature=legislature, slug=slug)
-
-    if 'xtor' in fragment:
-        fragment = ''
 
     return urlunparse((scheme, netloc, path, params, query, fragment))
 
