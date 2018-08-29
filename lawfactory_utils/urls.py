@@ -89,6 +89,19 @@ def get_redirected_url(url):
     return download(url).url
 
 
+def validate_link_CC_decision(url):
+    if not url:
+        return False
+    url = url.lower().replace('http://', 'https://')
+    if not url.startswith('https://www.conseil-constitutionnel.fr/decision/'):
+        return False
+    if url.count('/') != 5:
+        return False
+    if not url.endswith('dc.htm'):
+        return False
+    return True
+
+
 def find_stable_link_for_CC_decision(url):
     if url == 'http://www.conseil-constitutionnel.fr/decision.50309.html':
         url = 'https://www.conseil-constitutionnel.fr/decision/2010/2010615dc.htm'
