@@ -199,6 +199,7 @@ def clean_url(url):
     if 'senat.fr' in netloc:
         path = path.replace('leg/../', '/')
         path = path.replace('dossierleg/', 'dossier-legislatif/')
+        path = path.replace('/leg/', '/dossier-legislatif/')
 
         # normalize dosleg url by removing extra url parameters
         if 'dossier-legislatif/' in path:
