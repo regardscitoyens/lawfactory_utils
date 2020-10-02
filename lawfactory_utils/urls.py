@@ -54,7 +54,6 @@ def download(url, retry=5):
                         print('[download]', url, '[#failed-to-retrieve]', file=sys.stderr)
 
         original_url = url
-
         if "legifrance.gouv.fr" in url:
             LEGIFRANCE_PROXY = os.getenv("LEGIFRANCE_PROXY")
             if not LEGIFRANCE_PROXY:
@@ -68,7 +67,8 @@ def download(url, retry=5):
             'User-Agent': 'https://github.com/regardscitoyens/the-law-factory-parser (Compat: Mozilla)'
         })
 
-        resp.url = original_url
+        if "legifrance.gouv.fr" in url:
+            resp.url = original_url
 
         if 500 <= resp.status_code < 600:
             raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
