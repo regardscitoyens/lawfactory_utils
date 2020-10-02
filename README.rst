@@ -18,6 +18,8 @@ A few utilities for `the-law-factory-parser`_ project, shared by
     resp = download(url)
     print(resp.text)
 
+Warning: To be able to download from Légifrance, you must set up a ``LEGIFRANCE_PROXY`` env variable, which is a running instance of legifrance-proxy_.
+
 The cached responses are stored in the directory where this lib is
 installed. You can use ``lawfactory_where_is_my_cache`` to print the
 path.
@@ -42,3 +44,4 @@ path.
 .. _the-law-factory-parser: https://github.com/regardscitoyens/the-law-factory-parser
 .. _senapy: https://github.com/regardscitoyens/senapy
 .. _anpy: https://github.com/regardscitoyens/anpy
+.. _legifrance-proxy: https://github.com/mdamien/legifrance-proxy

@@ -53,12 +53,22 @@ def download(url, retry=5):
                     if '--debug' in sys.argv:
                         print('[download]', url, '[#failed-to-retrieve]', file=sys.stderr)
 
+        original_url = url
+
+        if "legifrance.gouv.fr" in url:
+            LEGIFRANCE_PROXY = os.getenv("LEGIFRANCE_PROXY")
+            if not LEGIFRANCE_PROXY:
+                raise Exception("You must configure a legifrance-proxy instance to be able to requests Légifrance, see lawfactory_utils README")
+            url = LEGIFRANCE_PROXY + url.split('legifrance.gouv.fr')[1]
+
         if '--debug' in sys.argv:
             print('[download]', url, file=sys.stderr)
 
         resp = requests.get(url, headers={
             'User-Agent': 'https://github.com/regardscitoyens/the-law-factory-parser (Compat: Mozilla)'
         })
+
+        resp.url = original_url
 
         if 500 <= resp.status_code < 600:
             raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
