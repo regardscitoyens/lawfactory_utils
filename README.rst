@@ -30,7 +30,7 @@ path.
 
     >>> from lawfactory_utils.urls import clean_url
     >>> clean_url('https://www.legifrance.gouv.fr/eli/loi/2017/9/15/JUSC1715752L/jo/texte')
-    'https://www.legifrance.gouv.fr/affichTexte.do?cidTexte=JORFTEXT000035567936&categorieLien=id'
+    'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000035567936'
 
 - Parsing of National Assembly URLS
 

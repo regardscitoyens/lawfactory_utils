@@ -53,7 +53,7 @@ def download(url, retry=5):
                     if '--debug' in sys.argv:
                         print('[download]', url, '[#failed-to-retrieve]', file=sys.stderr)
 
-        original_url = url
+        LEGIFRANCE_PROXY = None
         if "legifrance.gouv.fr" in url:
             LEGIFRANCE_PROXY = os.getenv("LEGIFRANCE_PROXY")
             if not LEGIFRANCE_PROXY:
@@ -67,8 +67,8 @@ def download(url, retry=5):
             'User-Agent': 'https://github.com/regardscitoyens/the-law-factory-parser (Compat: Mozilla)'
         })
 
-        if resp.url == url:
-            resp.url = original_url
+        if LEGIFRANCE_PROXY and LEGIFRANCE_PROXY in url:
+            resp.url = resp.url.replace(LEGIFRANCE_PROXY, "https://www.legifrance.gouv.fr")
 
         if 500 <= resp.status_code < 600:
             raise HTTPError('%s Server Error for url: %s' % (resp.status_code, url), response=resp)
@@ -156,6 +156,8 @@ def clean_url(url):
     'http://www.assemblee-nationale.fr/dyn/15/dossiers/deuxieme_partie'
     >>> clean_url("http://www.conseil-constitutionnel.fr/conseil-constitutionnel/francais/les-decisions/acces-par-date/decisions-depuis-1959/2013/2013-681-dc/decision-n-2013-681-dc-du-5-decembre-2013.138900.html")
     'https://www.conseil-constitutionnel.fr/decision/2013/2013681DC.htm'
+    >>> clean_url('https://www.legifrance.gouv.fr/eli/loi/2017/9/15/JUSC1715752L/jo/texte')
+    'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000035567936'
     """
     url = url.strip()
 
@@ -190,7 +192,7 @@ def clean_url(url):
         if 'cidTexte' in url_jo_params:
             query = 'cidTexte=' + url_jo_params['cidTexte'][0]
         elif path.endswith('/jo/texte'):
-            newurl = find_jo_link(url)
+            newurl = get_redirected_url(url)
             if url != newurl:
                 return clean_url(newurl)
 
@@ -199,6 +201,10 @@ def clean_url(url):
         if 'jo_pdf.do' in path and 'id' in url_jo_params:
             path = 'affichTexte.do'
             query = 'cidTexte=' + url_jo_params['id'][0]
+
+        # new legifrance wants to add an useless r=XXXXX variable
+        if query.startswith('r='):
+            query = ""
 
         # ensure to link initial version of the text and not furtherly modified ones
         if query.startswith('cidTexte'):
