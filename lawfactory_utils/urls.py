@@ -67,7 +67,7 @@ def download(url, retry=5):
             'User-Agent': 'https://github.com/regardscitoyens/the-law-factory-parser (Compat: Mozilla)'
         })
 
-        if "legifrance.gouv.fr" in url:
+        if resp.url == url:
             resp.url = original_url
 
         if 500 <= resp.status_code < 600:
