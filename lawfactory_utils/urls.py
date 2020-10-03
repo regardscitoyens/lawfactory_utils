@@ -158,6 +158,8 @@ def clean_url(url):
     'https://www.conseil-constitutionnel.fr/decision/2013/2013681DC.htm'
     >>> clean_url('https://www.legifrance.gouv.fr/eli/loi/2017/9/15/JUSC1715752L/jo/texte')
     'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000035567936'
+    >>> clean_url('https://www.legifrance.gouv.fr/UnTexteDeJorf.do?numjo=SSAX2011914L')
+    'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000042219373'
     """
     url = url.strip()
 
@@ -183,6 +185,12 @@ def clean_url(url):
     if 'legifrance.gouv.fr' in url:
         params = ''
         url_jo_params = parse_qs(query)
+
+        if 'UnTexteDeJorf' in path:
+            url = url.replace("UnTexteDeJorf.do", "WAspad/UnTexteDeJorf.do")
+            newurl = get_redirected_url(url)
+            if url != newurl:
+                return clean_url(newurl)
 
         if 'WAspad' in path:
             newurl = get_redirected_url(url)
