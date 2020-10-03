@@ -192,7 +192,7 @@ def clean_url(url):
             if url != newurl:
                 return clean_url(newurl)
 
-        if 'WAspad' in path:
+        if 'WAspad' in path or 'affichTexte.do' in path:
             newurl = get_redirected_url(url)
             if url != newurl:
                 return clean_url(newurl)
@@ -219,6 +219,14 @@ def clean_url(url):
             query += '&categorieLien=id'
 
         path = path.replace('./affichTexte.do', 'affichTexte.do')
+
+        # ensure it links to the initial version for the new legifrance links
+        if 'loda/id/JORFTEXT' in path:
+            path_parts = [part for part in path.split('/') if part]
+            if not path_parts[-1].startswith("JORFTEXT") and path_parts[-2].startswith("JORFTEXT"):
+                path_parts = path_parts[:-1]
+                path = '/'.join(path_parts)
+                path = path.replace('loda/id', 'jorf/id')
 
     if 'senat.fr' in netloc:
         path = path.replace('leg/../', '/')
